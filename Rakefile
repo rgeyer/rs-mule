@@ -15,7 +15,7 @@ require 'rubygems/package_task'
 require 'rspec/core/rake_task'
 
 desc 'Package gem'
-gemtask = Gem::PackageTask.new(Gem::Specification.load('mule.gemspec')) do |package|
+gemtask = Gem::PackageTask.new(Gem::Specification.load('rs-deploy-mule.gemspec')) do |package|
   package.package_dir = 'pkg'
   package.need_zip = true
   package.need_tar = true

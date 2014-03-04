@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # Copyright (c) 2014 Ryan Geyer
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -19,6 +17,16 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require File.expand_path(File.join(File.dirname(__FILE__), "..", "lib", "mule"))
+require 'net/http'
 
-Mule::Cli.start(ARGV)
+module RsDeployMule
+  class Cli < Thor
+    desc "foo", "does foo"
+    option :rs_email, :desc => "RightScale user email address"
+    option :rs_pass, :desc => "RightScale user password"
+    option :rs_account_id, :desc => "RightScale account number"
+    def foo
+
+    end
+  end
+end

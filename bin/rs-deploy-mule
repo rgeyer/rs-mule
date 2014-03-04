@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 # Copyright (c) 2014 Ryan Geyer
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -17,6 +19,6 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require 'thor'
-require 'right_api_client'
-require 'mule/cli'
+require File.expand_path(File.join(File.dirname(__FILE__), "..", "lib", "rs-deploy-mule"))
+
+RsDeployMule::Cli.start(ARGV)
