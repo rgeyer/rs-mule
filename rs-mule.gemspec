@@ -1,13 +1,13 @@
 Gem::Specification.new do |gem|
-  gem.name = "mule"
+  gem.name = "rs-mule"
   gem.version = "0.0.1"
-  gem.homepage = "https://github.com/rgeyer/rs-deploy-mule"
+  gem.homepage = "https://github.com/rgeyer/rs-mule"
   gem.license = "MIT"
-  gem.summary = %Q{It runs stuff}
+  gem.summary = %Q{It runs "stuff"}
   gem.description = gem.summary
   gem.email = "me@ryangeyer.com"
   gem.authors = ["Ryan J. Geyer"]
-  gem.executables << "rs-deploy-mule"
+  gem.executables << "rs-mule"
 
   gem.add_dependency("right_api_client", "= 1.5.15")
   gem.add_dependency("thor", "~> 0.18.1")

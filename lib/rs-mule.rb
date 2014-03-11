@@ -17,16 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require 'net/http'
-
-module RsDeployMule
-  class Cli < Thor
-    desc "foo", "does foo"
-    option :rs_email, :desc => "RightScale user email address"
-    option :rs_pass, :desc => "RightScale user password"
-    option :rs_account_id, :desc => "RightScale account number"
-    def foo
-
-    end
-  end
-end
+require 'thor'
+require 'right_api_client'
+glob_path = File.expand_path(File.join(File.dirname(__FILE__), 'rs-mule')) + '/**/*.rb'
+Dir.glob(glob_path, &method(:require))
