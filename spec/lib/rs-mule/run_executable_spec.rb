@@ -24,11 +24,15 @@ describe RsMule::RunExecutable do
   # a recipe name, and no inputs
   #
   # @return A flexmock of RightApi::Client that expects all the right stuff.
-  def mockTheHappyPath(options={:mock_run_executable => true})
+  def mockTheHappyPath(options={})
+    options = {
+        :mock_run_executable => true,
+        :match_all => "true"
+    }.merge(options)
     by_tag_flexmock = flexmock("by_tag")
     by_tag_flexmock
     .should_receive("by_tag")
-    .with(:resource_type => "instances", :tags => ["foo"])
+    .with(:resource_type => "instances", :tags => ["foo"], :match_all => options[:match_all])
     .and_return([flexmock(:links => [{"rel" => "resource", "href" => "/api/clouds/1/instances/abc123"}])])
 
     instance_flexmock = flexmock(:href => "/api/clouds/1/instances/abc123")
@@ -153,6 +157,16 @@ describe RsMule::RunExecutable do
 
         re = RsMule::RunExecutable.new(client)
         re.run_executable("foo", "barbaz")
+      end
+    end
+
+    context "when tag_match_strategy option is set to any" do
+      it "calls the API with match_all set to false" do
+        client = mockTheHappyPath(:match_all => "false")
+        client = mockRightScriptLookup(client)
+
+        re = RsMule::RunExecutable.new(client)
+        re.run_executable("foo", "barbaz", :tag_match_strategy => "any")
       end
     end
   end

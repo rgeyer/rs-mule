@@ -45,11 +45,18 @@ module RsMule
     #   - right_script_revision: When a RightScript name or href is specified,
     #     this can be used to declare the revision to use.  Can be a specific
     #     revision number or "latest".  Defaults to "latest"
+    #   - tag_match_strategy: If multiple tags are specified, this will
+    #     determine how they are matched.  When set to "all" instances with all
+    #     tags will be matched.  When set to "any" instances with any of the
+    #     provided tags will be matched.  Defaults to "all"
     # @raise [RightScriptNotFound] If the specified RightScript lineage does
     #   not exist, or the specified revision is not available.
-    def run_executable(tags, executable, options={:executable_type => "auto", :right_script_revision => "latest"})
-      # Defaults in the definition above are really only useful for the yard docs
-      options = {:executable_type => "auto", :right_script_revision => "latest"}.merge(options)
+    def run_executable(tags, executable, options={})
+      options = {
+          :executable_type => "auto",
+          :right_script_revision => "latest",
+          :tag_match_strategy => "all"
+      }.merge(options)
       execute_params = {}
       tags = [tags] unless tags.is_a?(Array)
 
@@ -80,7 +87,8 @@ module RsMule
 
       resources_by_tag = @right_api_client.tags.by_tag(
           :resource_type => "instances",
-          :tags => tags
+          :tags => tags,
+          :match_all => options[:tag_match_strategy] == "all" ? "true" : "false"
       )
 
       resources_by_tag.each do |res|
