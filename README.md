@@ -132,6 +132,47 @@ Chef Recipe:
 rs-mule run_executable "cookbook::recipe" --executable-type=recipe_name --tags=tag1
 ```
 
+##### Script Inputs
+Of course you might want to pass some inputs to the script or recipe that you're
+executing.  Shockingly enough, you can!
+
+Passing INPUT_ONE and INPUT_TWO to a script RightScript:
+```
+rs-mule run_executable "Some RightScript Name" --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar
+```
+
+Passing some/chef/attribute1 and some/chef/attribute2 to a recipe:
+```
+rs-mule run_executable "cookbook::recipe" --tags=tag1 --inputs='some/chef/attribute:text:foo' 'some/chef/attribute2:text:bar'
+```
+
+Suppose you want to set those inputs so that they stick around after you've run
+the executable.  You can do that too.  You just need to specify where you want
+the inputs to be set.
+
+Saving the inputs on the current instance:
+```
+rs-mule run_executable "Some RightScript Name" --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=current_instance
+```
+
+Saving the inputs on the next instance:
+```
+rs-mule run_executable "Some RightScript Name" --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=next_instance
+```
+
+Saving the inputs on the deployment containing the instance:
+```
+rs-mule run_executable "Some RightScript Name" --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=deployment
+```
+
+You can save the inputs on any mix of them as well, since the update_inputs
+option is an array.
+
+Saving the inputs on EVERYTHING:
+```
+rs-mule run_executable "Some RightScript Name" --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=current_instance next_instance deployment
+```
+
 ## Library
 The library does all this cool stuff, and I'll document it, I swear...
 

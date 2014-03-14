@@ -62,6 +62,18 @@ describe RsMule::RunExecutable do
       end
     end
 
+    context "when string is supplied for update_inputs" do
+      it "converts it to an array" do
+        client = mockTheHappyPath
+        instance_inputs_mock = flexmock("instance.inputs")
+        instance_inputs_mock.should_receive("multi_update").once.with(:inputs => {"foo" => "text:barbaz"})
+        client.resource.should_receive("inputs").and_return(instance_inputs_mock)
+
+        re = RsMule::RunExecutable.new(client)
+        re.run_executable("foo", "cookbook::recipe", :inputs => {"foo" => "text:barbaz"}, :update_inputs => "current_instance")
+      end
+    end
+
     context "when executable type option is auto" do
       it "detects RightScript name and looks up href" do
         client = mockTheHappyPath(:mock_run_executable => false)
@@ -169,6 +181,19 @@ describe RsMule::RunExecutable do
         re.run_executable("foo", "barbaz", :tag_match_strategy => "any")
       end
     end
+
+    context "when inputs option is supplied" do
+      it "passes them along" do
+        client = mockTheHappyPath(:mock_run_executable => false)
+        client.resource
+          .should_receive("run_executable")
+          .once
+          .with(:recipe_name => "cookbook::recipe", :inputs => {"foo" => "text:barbaz"})
+
+        re = RsMule::RunExecutable.new(client)
+        re.run_executable("foo", "cookbook::recipe", :inputs => {"foo" => "text:barbaz"})
+      end
+    end
   end
 
   describe "#find_right_script_lineage_by_name" do
@@ -220,6 +245,47 @@ describe RsMule::RunExecutable do
           re = RsMule::RunExecutable.new(client)
           re.run_executable("foo", "barbaz", :right_script_revision => 1)
         end
+      end
+    end
+  end
+
+  describe "#update_inputs" do
+    context "when current_instance is supplied" do
+      it "updates current instance inputs" do
+        client = mockTheHappyPath
+        instance_inputs_mock = flexmock("instance.inputs")
+        instance_inputs_mock.should_receive("multi_update").once.with(:inputs => {"foo" => "text:barbaz"})
+        client.resource.should_receive("inputs").and_return(instance_inputs_mock)
+
+        re = RsMule::RunExecutable.new(client)
+        re.run_executable("foo", "cookbook::recipe", :inputs => {"foo" => "text:barbaz"}, :update_inputs => ["current_instance"])
+      end
+    end
+
+    context "when next_instance is supplied" do
+      it "updates next instance inputs" do
+        client = mockTheHappyPath
+        instance_inputs_mock = flexmock("instance.inputs")
+        instance_inputs_mock.should_receive("multi_update").once.with(:inputs => {"foo" => "text:barbaz"})
+        next_instance_mock = flexmock(:show => flexmock(:inputs => instance_inputs_mock))
+        parent_mock = flexmock(:show => flexmock(:next_instance => next_instance_mock))
+        client.resource.should_receive("parent").and_return(parent_mock)
+
+        re = RsMule::RunExecutable.new(client)
+        re.run_executable("foo", "cookbook::recipe", :inputs => {"foo" => "text:barbaz"}, :update_inputs => ["next_instance"])
+      end
+    end
+
+    context "when deployment is supplied" do
+      it "updates deployment inputs" do
+        client = mockTheHappyPath
+        instance_inputs_mock = flexmock("instance.inputs")
+        instance_inputs_mock.should_receive("multi_update").once.with(:inputs => {"foo" => "text:barbaz"})
+        deployment_mock = flexmock(:show => flexmock(:inputs => instance_inputs_mock))
+        client.resource.should_receive("deployment").and_return(deployment_mock)
+
+        re = RsMule::RunExecutable.new(client)
+        re.run_executable("foo", "cookbook::recipe", :inputs => {"foo" => "text:barbaz"}, :update_inputs => ["deployment"])
       end
     end
   end

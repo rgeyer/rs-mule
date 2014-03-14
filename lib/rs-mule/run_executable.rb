@@ -39,26 +39,36 @@ module RsMule
     #   recipe.  This method will attempt to auto detect which it is, or you
     #   can be friendly and provide a hint using the executable_type option.
     # @param [Hash] options A list of options where the possible values are
-    #   - executable_type: One of ["auto","right_script_name","right_script_href","recipe_name"].  When set
-    #     to "auto" we will attempt to determine if an executable is a recipe,
-    #     a RightScript name, or a RightScript href. Defaults to "auto"
-    #   - right_script_revision: When a RightScript name or href is specified,
-    #     this can be used to declare the revision to use.  Can be a specific
-    #     revision number or "latest".  Defaults to "latest"
-    #   - tag_match_strategy: If multiple tags are specified, this will
-    #     determine how they are matched.  When set to "all" instances with all
-    #     tags will be matched.  When set to "any" instances with any of the
-    #     provided tags will be matched.  Defaults to "all"
+    #   - executable_type [String] One of ["auto","right_script_name","right_script_href","recipe_name"].  When set
+    #       to "auto" we will attempt to determine if an executable is a recipe,
+    #       a RightScript name, or a RightScript href. Defaults to "auto"
+    #   - right_script_revision [String] When a RightScript name or href is specified,
+    #       this can be used to declare the revision to use.  Can be a specific
+    #       revision number or "latest".  Defaults to "latest"
+    #   - tag_match_strategy [String] If multiple tags are specified, this will
+    #       determine how they are matched.  When set to "all" instances with all
+    #       tags will be matched.  When set to "any" instances with any of the
+    #       provided tags will be matched.  Defaults to "all"
+    #   - inputs [Hash] A hash where the keys are the name of an input and the
+    #       value is the desired value for that input.  Uses Inputs 2.0[http://reference.rightscale.com/api1.5/resources/ResourceInputs.html#multi_update]
+    #       semantics.
+    #   - update_inputs [Array<String>] An array of values indicating which
+    #       objects should be updated with the inputs supplied.  Can be empty in
+    #       which case the inputs will be used only for this execution.  Acceptable
+    #       values are ["current_instance","next_instance","deployment"]
     # @raise [RightScriptNotFound] If the specified RightScript lineage does
     #   not exist, or the specified revision is not available.
     def run_executable(tags, executable, options={})
       options = {
           :executable_type => "auto",
           :right_script_revision => "latest",
-          :tag_match_strategy => "all"
+          :tag_match_strategy => "all",
+          :inputs => {},
+          :update_inputs => []
       }.merge(options)
       execute_params = {}
       tags = [tags] unless tags.is_a?(Array)
+      options[:update_inputs] = [options[:update_inputs]] unless options[:update_inputs].is_a?(Array)
 
       case options[:executable_type]
         when "right_script_href"
@@ -85,15 +95,22 @@ module RsMule
           raise ArgumentError.new("Unknown executable_type (#{options[:executable_type]})")
       end
 
+      if options[:inputs].length > 0
+        execute_params[:inputs] = options[:inputs]
+      end
+
       resources_by_tag = @right_api_client.tags.by_tag(
-          :resource_type => "instances",
-          :tags => tags,
-          :match_all => options[:tag_match_strategy] == "all" ? "true" : "false"
+        :resource_type => "instances",
+        :tags => tags,
+        :match_all => options[:tag_match_strategy] == "all" ? "true" : "false"
       )
 
       resources_by_tag.each do |res|
         instance = @right_api_client.resource(res.links.first["href"])
         instance.run_executable(execute_params)
+        options[:update_inputs].each do |update_type|
+          update_inputs(instance, options[:inputs], update_type)
+        end
       end
     end
 
@@ -136,6 +153,34 @@ module RsMule
         right_script = desired_script.first
       end
       right_script
+    end
+
+    # Updates inputs on one of the objects related to the specified instance.
+    # This deliberately lacks error handling. If you attempt to set the input on
+    # the deployment of the matching instance(s) and there isn't a deployment,
+    # you'll get the exception.
+    #
+    # TODO: Maybe handle the error so that other instances in a matched set can
+    # have a chance to succeed.
+    #
+    # @param [RightApi::Resource] The RightApi::Resource of media type
+    #   Instance[http://reference.rightscale.com/api1.5/media_types/MediaTypeInstance.html]
+    #   which will be used to find related objects, or which will get it's inputs
+    #   updated.
+    # @param [Hash] inputs A hash where the keys are the name of an input and the
+    #   value is the desired value for that input.  Uses Inputs 2.0[http://reference.rightscale.com/api1.5/resources/ResourceInputs.html#multi_update]
+    #   semantics.
+    # @param [String] update_type Which object should be updated with the inputs
+    #   supplied.  Acceptable values are ["current_instance","next_instance","deployment"]
+    def update_inputs(instance, inputs, update_type)
+      case update_type
+        when "current_instance"
+          instance.inputs.multi_update(:inputs => inputs)
+        when "next_instance"
+          instance.parent.show.next_instance.show.inputs.multi_update(:inputs => inputs)
+        when "deployment"
+          instance.deployment.show.inputs.multi_update(:inputs => inputs)
+      end
     end
   end
 end

@@ -52,11 +52,20 @@ EOF
     option :tag_match_strategy, :desc => "If multiple tags are specified, this will determine how they are matched.  When set to \"all\" instances with all tags will be matched.  When set to \"any\" instances with any of the provided tags will be matched.  Defaults to \"all\""
     option :executable_type, :desc => "What value is being provided for the executable parameter. One of [auto|right_script_name|right_script_href|recipe_name]"
     option :right_script_revision, :desc => "When a RightScript name is provided, this can be used to specify which revision to use.  If not provided the latest revision will be used."
+    option :inputs, :type => :hash, :desc => "A hash where the keys are the name of an input and the value is the desired value for that input.  Uses Inputs 2.0 semantics."
+    option :update_inputs, :type => :array, :desc => "An array of values indicating which objects should be updated with the inputs supplied.  Can be empty in which case the inputs will be used only for this execution.  Acceptable values are [\"current_instance\",\"next_instance\",\"deployment\"]"
     def run_executable(executable)
+      # Cover our bases with symbolized keys as well
+      new_options = {}
+      @options.each do |k,v|
+        new_options[k.to_sym] = v
+        new_options[k] = v
+      end
+
       client = get_right_api_client
 
       mule = RsMule::RunExecutable.new(client)
-      mule.run_executable(@options[:tags], executable, @options)
+      mule.run_executable(new_options[:tags], executable, new_options)
     end
   end
 end
