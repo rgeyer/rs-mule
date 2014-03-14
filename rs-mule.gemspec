@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name = "rs-mule"
-  gem.version = "0.0.1"
+  gem.version = "0.0.2"
   gem.homepage = "https://github.com/rgeyer/rs-mule"
   gem.license = "MIT"
   gem.summary = %Q{It runs "stuff"}
