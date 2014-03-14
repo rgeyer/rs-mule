@@ -63,11 +63,202 @@
 
     <div id="content"><div id='filecontents'><h1>rs-mule</h1>
 
-<p>A CLI tool that runs &quot;stuff&quot;.  Meant primarily for running RightScripts or Chef recipes on individual nodes, identified by tags.</p>
+<p>A <a href="./#CLI">CLI</a> tool that runs &quot;stuff&quot;.  Meant primarily for running RightScripts or Chef recipes on individual nodes, identified by tags.</p>
+
+<p>Also a <a href="./#Library">Library</a> that allows you to do the same sorta stuff in your own app, cause I&#39;m generous like that.</p>
+
+<p><a href="https://travis-ci.org/rgeyer/rs-mule"><img src="https://travis-ci.org/rgeyer/rs-mule.png" /></a></p>
+
+<h2>CLI</h2>
+
+<h3>Authentication</h3>
+
+<p>The CLI requires you to authenticate with right_api_client.  Typically providing
+your rightscale email address, password, and an account id are sufficient for
+getting authenticated.  However you can also use an oAuth token. For more
+information on the required parameters check out the
+<a href="https://github.com/rightscale/right_api_client">right_api_client documentation</a></p>
+
+<p>When using the CLI you can provide RightScale API authentication info in two ways.</p>
+
+<h4>rs_auth_hash</h4>
+
+<p>Perhaps the easiest way to provide the authentication parameters is on the
+commandline with the --rs-auth-hash option.</p>
+
+<p>Example:
+<code>
+rs-mule [COMMAND] --rs-auth-hash=email:foo@bar.baz password:password account_id:12345
+</code></p>
+
+<h4>rs_auth_file</h4>
+
+<p>You can also create a YAML file which contains the authentication parameters you
+want to supply, then point rs-mule at your authentication parameter file.</p>
+
+<p>You can find an example of this file at the root of this project as
+&quot;auth_file.yaml.example&quot;, and it looks a little like this.</p>
+
+<p>Example File:</p>
+
+<h2>```</h2>
+
+<p>:email: <a href="mailto:foo@bar.baz">foo@bar.baz</a>
+:password: password
+:account_id: 12345
+```</p>
+
+<p>You can tell rs-mule to use your parameters file thusly.</p>
+
+<p>Example:
+<code>
+rs-mule [COMMAND] --rs-auth-file=/path/to/auth_file.yaml
+</code></p>
+
+<h3>Usage</h3>
+
+<p>rs-mule has one (soon to be two) commands.</p>
+
+<pre class="code ruby"><code class="ruby">Commands:
+  rs-mule help [COMMAND]                       # Describe available commands or one specific command
+  rs-mule run_executable --tags=one two three  # Runs a specified recipe or RightScript on instances targeted by tag
+</code></pre>
+
+<h4>run_executable command</h4>
+
+<p>This is used to run a RightScript or Chef recipe on instances found using a tag
+search.</p>
+
+<p>The simplest usage requires the executable to run, and at least one tag.
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1
+</code></p>
+
+<h5>Tag Matching Strategy</h5>
+
+<p>If you provide more than one tag, rs-mule will assume that you want target
+instances to possess all of the supplied tags in order for the executable to be
+run on them.  However, you can be a little more lenient and have rs-mule run the
+executable on instances which have any of the tags.</p>
+
+<p>Script will run only on instances which have both &quot;tag1&quot; and &quot;tag2&quot;
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 tag2
+</code></p>
+
+<p>The explicit version of above
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 tag2 --tag-match-strategy=all
+</code></p>
+
+<p>Script will run on any instance which has either &quot;tag1&quot; or &quot;tag2&quot;
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 tag2 --tag-match-strategy=any
+</code></p>
+
+<h5>RightScript Version</h5>
+
+<p>When you are running a RightScript, rs-mule will assume you want to run the
+latest and greatest version.  It&#39;ll also assume that revision is not the HEAD
+revision.  You can supply a specified revision number, or use 0 if you want to
+live on the edge and use the HEAD revision.</p>
+
+<p>Specify revision 3
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --right-script-revision=3
+</code></p>
+
+<p>Specify HEAD revision
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --right-script-revision=0
+</code></p>
+
+<h5>Executable Type</h5>
+
+<p>The executable value can be one of the following;
+* The name of a RightScript
+* An API href of a RightScript (Eg. /api/right_scripts/abc123)
+* The name of a Chef recipe (Eg. cookbook::recipe)</p>
+
+<p>rs-mule will attempt to automatically detect which one you&#39;ve supplied by applying
+some regular expressions and other detection mechanisms against the executable
+string provided.</p>
+
+<p>However, you can remove the guesswork by specifying the executable type as an
+option.</p>
+
+<p>RightScript HREF:
+<code>
+rs-mule run_executable &quot;/api/right_scripts/abc123&quot; --executable-type=right_script_href --tags=tag1
+</code></p>
+
+<p>RightScript Name:
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --executable-type=right_script_name --tags=tag1
+</code></p>
+
+<p>Chef Recipe:
+<code>
+rs-mule run_executable &quot;cookbook::recipe&quot; --executable-type=recipe_name --tags=tag1
+</code></p>
+
+<h5>Script Inputs</h5>
+
+<p>Of course you might want to pass some inputs to the script or recipe that you&#39;re
+executing.  Shockingly enough, you can!</p>
+
+<p>Passing INPUT_ONE and INPUT_TWO to a script RightScript:
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar
+</code></p>
+
+<p>Passing some/chef/attribute1 and some/chef/attribute2 to a recipe:
+<code>
+rs-mule run_executable &quot;cookbook::recipe&quot; --tags=tag1 --inputs=&#39;some/chef/attribute:text:foo&#39; &#39;some/chef/attribute2:text:bar&#39;
+</code></p>
+
+<p>Suppose you want to set those inputs so that they stick around after you&#39;ve run
+the executable.  You can do that too.  You just need to specify where you want
+the inputs to be set.</p>
+
+<p>Saving the inputs on the current instance:
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=current_instance
+</code></p>
+
+<p>Saving the inputs on the next instance:
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=next_instance
+</code></p>
+
+<p>Saving the inputs on the deployment containing the instance:
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=deployment
+</code></p>
+
+<p>You can save the inputs on any mix of them as well, since the update_inputs
+option is an array.</p>
+
+<p>Saving the inputs on EVERYTHING:
+<code>
+rs-mule run_executable &quot;Some RightScript Name&quot; --tags=tag1 --inputs=INPUT_ONE:text:foo INPUT_TWO:text:bar --update_inputs=current_instance next_instance deployment
+</code></p>
+
+<h2>Library</h2>
+
+<p>The library does all this cool stuff, and I&#39;ll document it, I swear...</p>
+
+<h2>Authors</h2>
+
+<p>Created and maintained by <a href="https://github.com/rgeyer">Ryan Geyer</a> (<a href="mailto:me@ryangeyer.com">me@ryangeyer.com</a>)</p>
+
+<h2>License</h2>
+
+<p>MIT (see <a href="https://github.com/rgeyer/rs-mule/blob/master/LICENSE">LICENSE</a>)</p>
 </div></div>
 
     <div id="footer">
-  Generated on Tue Mar 11 16:18:38 2014 by
+  Generated on Thu Mar 13 22:25:05 2014 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.3 (ruby-1.9.3).
 </div>

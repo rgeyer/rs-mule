@@ -119,7 +119,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#foo-instance_method" title="#foo (instance method)">- (Object) <strong>foo</strong> </a>
+      <a href="#run_executable-instance_method" title="#run_executable (instance method)">- (Object) <strong>run_executable</strong>(executable) </a>
     
 
     
@@ -149,9 +149,9 @@
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="foo-instance_method">
+  <h3 class="signature first" id="run_executable-instance_method">
   
-    - (<tt>Object</tt>) <strong>foo</strong> 
+    - (<tt>Object</tt>) <strong>run_executable</strong>(executable) 
   
 
   
@@ -163,15 +163,35 @@
       <pre class="lines">
 
 
-26
-27
-28</pre>
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/rs-mule/cli.rb', line 26</span>
+      <pre class="code"><span class="info file"># File 'lib/rs-mule/cli.rb', line 57</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_foo'>foo</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_run_executable'>run_executable</span><span class='lparen'>(</span><span class='id identifier rubyid_executable'>executable</span><span class='rparen'>)</span>
+  <span class='comment'># Cover our bases with symbolized keys as well
+</span>  <span class='id identifier rubyid_new_options'>new_options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@options</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+    <span class='id identifier rubyid_new_options'>new_options</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_v'>v</span>
+    <span class='id identifier rubyid_new_options'>new_options</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_v'>v</span>
+  <span class='kw'>end</span>
 
+  <span class='id identifier rubyid_client'>client</span> <span class='op'>=</span> <span class='id identifier rubyid_get_right_api_client'>get_right_api_client</span>
+
+  <span class='id identifier rubyid_mule'>mule</span> <span class='op'>=</span> <span class='const'>RsMule</span><span class='op'>::</span><span class='const'>RunExecutable</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_client'>client</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_mule'>mule</span><span class='period'>.</span><span class='id identifier rubyid_run_executable'>run_executable</span><span class='lparen'>(</span><span class='id identifier rubyid_new_options'>new_options</span><span class='lbracket'>[</span><span class='symbol'>:tags</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_executable'>executable</span><span class='comma'>,</span> <span class='id identifier rubyid_new_options'>new_options</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -183,7 +203,7 @@
 </div>
 
     <div id="footer">
-  Generated on Tue Mar 11 16:18:38 2014 by
+  Generated on Thu Mar 13 22:25:05 2014 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.3 (ruby-1.9.3).
 </div>
