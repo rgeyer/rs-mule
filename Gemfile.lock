@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rs-mule (0.0.1)
+    rs-mule (0.0.2)
       right_api_client (= 1.5.15)
       thor (~> 0.18.1)
 
