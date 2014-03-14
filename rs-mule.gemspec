@@ -12,5 +12,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency("right_api_client", "= 1.5.15")
   gem.add_dependency("thor", "~> 0.18.1")
 
-  gem.files = Dir.glob("{lib,bin/**/*") + ["LICENSE", "README.md"]
+  gem.files = Dir.glob("{lib,bin}/**/*") + ["LICENSE", "README.md"]
 end
